@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warsztat</title>
+    <style>
+        /* Navigation Ribbon */
+        .top-nav { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            background: #020062; 
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            z-index: 1000; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+            box-sizing: border-box;
+        }
+        #nav-user-info {
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: normal;
+        }
+
+        #nav-user-info strong {
+            color: #92c7ff;
+        }
+        .nav-buttons {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        .top-nav button { 
+            width: auto; 
+            padding: 8px 20px; 
+            background: #275bde; 
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .top-nav button:hover { background: #0e46d4; } 
+
+        /* Page Layout */
+        body { 
+            font-family: sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            padding-top: 100px;
+            background: #f4f4f4; 
+            margin: 0;
+        }
+        .card { 
+            background: white; 
+            padding: 2rem; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            width: 350px;
+            transition: width 0.3s ease;
+        }
+        .card-wide { 
+            width: 90%; 
+            max-width: 1000px; 
+        }
+        h2 { text-align: center; color: #333; }
+        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        
+        /* Buttons */
+        .btn-primary { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-danger { background: #dc3545 !important; }
+        
+        .switch { text-align: center; font-size: 0.9rem; cursor: pointer; color: #007bff; }
+        .hidden { display: none !important; opacity: 0;}
+        #status { text-align: center; font-weight: bold; margin-top: 10px; margin-bottom: 10px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #eee; }
+        #data-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .item-card {
+            background: #fff;
+            border-bottom: 2px solid #eee;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .item-card strong { color: #333; font-size: 0.95rem; }
+
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            grid-column: 1 / -1;
+            padding: 10px;
+        }
+
+        .pagination-controls button { width: auto; padding: 5px 15px; }
+
+        #tab-weekly { width: 100%; max-width: 1200px; }
+
+        .weekly-item {
+            background: #f0f7ff;
+            border-left: 4px solid #007bff;
+            padding: 6px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.05);
+            cursor: help;
+        }
+
+        .day-column {
+            background: #fff;
+            border: 1px solid #ddd;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .day-header {
+            background: #020062;
+            color: white;
+            text-align: center;
+            padding: 8px 2px;
+            font-size: 0.8rem;
+        }
+
+        #user-panel > div {
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .tab-active {
+            display: block !important;
+            animation: fadeIn 0.15s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+
+        .form-card input, 
+        .form-card select, 
+        .form-card textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            margin: 10px 0 15px 0;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            display: block;
+        }
+
+        .form-card h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 1.2rem;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="main-nav" class="top-nav hidden">
+        <div id="nav-user-info">
+            Użytkownik: <span id="display-user"></span> | <strong><span id="display-role"></span></strong>
+        </div>
+
+        <div class="nav-buttons">
+            <button id="nav-client-btn" onclick="switchTab('client')">Nowy Klient</button>
+            <button id="nav-res-btn" onclick="switchTab('res')">Nowa Rezerwacja</button>
+            <button id="nav-add-btn" onclick="switchTab('insert')">Dodaj Część / Usługę</button>
+            <button onclick="switchTab('list')">Baza Danych</button>
+            <button onclick="switchTab('weekly')">Harmonogram</button>
+        </div>
+
+        <button onclick="logout()" class="btn-danger" style="margin: 0;">Wyloguj</button>
+    </div>
+
+    <div class="card">
+        <div id="login-view">
+            <h2>Logowanie</h2>
+            <input type="text" id="login-email" placeholder="Login">
+            <input type="password" id="login-pass" placeholder="Hasło">
+            <button class="btn-primary" onclick="handleLogin()">Zaloguj</button>
+            <p class="switch" onclick="toggleView()">Zarejestruj się</p>
+        </div>
+
+        <div id="register-view" class="hidden">
+            <h2>Rejestracja</h2>
+            <input type="text" id="reg-login" placeholder="Nowy login">
+            <input type="password" id="reg-pass" placeholder="Nowe hasło">
+            <select id="reg-role">
+                <option value="mechanik">Mechanik</option>
+                <option value="biuro">Biuro</option>
+            </select>
+            <button class="btn-primary" onclick="handleRegister()">Utwórz konto</button>
+            <p class="switch" onclick="toggleView()">Masz już konto? Zaloguj się</p>
+        </div>
+
+        <div id="status"></div>
+
+        <div id="user-panel" class="hidden">
+
+            <div id="tab-insert">
+                <div class="form-card">
+                    <div id="actions-office" style="display: none;">
+                        <h3>Nowa Część / Usługa</h3>
+                        <select id="item-type" onchange="toggleForm()">
+                            <option value="part">Część</option>
+                            <option value="service">Usługa</option>
+                        </select>
+                        <input type="text" id="input-name" placeholder="Nazwa">
+                        <input type="number" step="0.01" id="input-price" placeholder="Cena">
+                        <div id="duration-wrapper" class="hidden">
+                            <input type="text" id="input-duration" placeholder="Czas (00:00:00)">
+                        </div>
+                        <button class="btn-primary" onclick="handleSubmit()">Zapisz</button>
+                    </div>
+                    <div id="actions-mechanic" style="display: none;">
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-client" class="hidden">
+                <div class="form-card">
+                    <h3>Nowy Klient</h3>
+                    <input type="text" id="client-imie" placeholder="Imię">
+                    <input type="text" id="client-nazwisko" placeholder="Nazwisko">
+                    <button class="btn-primary" onclick="addClient()">Zarejestruj Klienta</button>
+                </div>
+            </div>
+
+            <div id="tab-res" class="hidden">
+                <div class="form-card">
+                    <h3>Nowa Rezerwacja</h3>
+                    <input type="number" id="rez-client-id" placeholder="ID Klienta (z listy klientów)">
+                    <label style="font-size: 0.8rem; display: block; margin-top: 10px;">Data i godzina wizyty:</label>
+                    <input type="datetime-local" id="rez-start-time">
+                    <textarea id="rez-opis" placeholder="Opis usterki / zakres prac" style="width: 100%; box-sizing: border-box; resize: none; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; padding: 10px; height: 80px; display: block;"></textarea>
+                    <button class="btn-primary" onclick="handleSaveAppointment()">Zarezerwuj Termin</button>
+                </div>
+            </div>
+
+            <div id="tab-list" class="hidden">
+                <div class="form-card">
+                    <h3>Baza Danych</h3>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="btn-primary" onclick="fetchData('parts')">Części</button>
+                        <button class="btn-primary" onclick="fetchData('services')">Usługi</button>
+                        <button id="btn-list-clients" class="btn-primary hidden" onclick="fetchData('clients')">Klienci</button>
+                    </div>
+                    <div id="data-container" style="margin-top: 15px; font-size: 0.85rem;"></div>
+                </div>
+            </div>
+            
+            <div id="tab-weekly" class="hidden">
+                <div class="form-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <button class="btn-primary" style="width:auto;" onclick="changeWeek(-1)">Poprzedni</button>
+                        <h3 id="week-display-title" style="margin:0;">Tydzień ...</h3>
+                        <button class="btn-primary" style="width:auto;" onclick="changeWeek(1)">Następny</button>
+                    </div>
+                    <div id="weekly-grid-container" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px;">
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="tab-job-details" class="hidden">
+                <div class="form-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3>Szczegóły Zlecenia #<span id="detail-res-id"></span></h3>
+                        <button class="btn-primary" style="width:auto;" onclick="switchTab('weekly')">Powrót</button>
+                    </div>
+                    
+                    <div id="job-info-header" style="background: #ffffff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #007bff; border-right: 5px solid #007bff;">
+                        <div>
+                            <p><strong>Klient:</strong> <span id="detail-client"></span></p>
+                            <p><strong>Godziny:</strong> <span id="detail-time-range"></span></p>
+                            <p><strong>Opis:</strong> <span id="detail-opis"></span></p>
+                            
+                            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ccc;">
+                                <p style="margin-bottom: 5px;">
+                                    <strong>Status:</strong> 
+                                    <span id="current-status-badge" style="padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;"></span>
+                                </p>
+                                
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <select id="status-selector" onchange="updateJobStatus()" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; width: 200px; background-color: white;">
+                                        <option value="oczekuje">Oczekuje</option>
+                                        <option value="w trakcie">W trakcie</option>
+                                        <option value="zakonczone">Zakończone</option>
+                                    </select>
+                                    
+                                    <span id="status-save-indicator" style="font-size: 0.8rem; color: #28a745; display: none; font-weight: bold;">Zapisano</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div class="card-mini">
+                            <h4>Dodaj Część</h4>
+                            <input type="text" id="add-part-name" placeholder="Nazwa części">
+                            <button class="btn-primary" onclick="linkItemToJob('parts')">Dodaj Część</button>
+                        </div>
+                        
+                        <div class="card-mini">
+                            <h4>Dodaj Usługę</h4>
+                            <input type="text" id="add-service-name" placeholder="Nazwa usługi">
+                            <button class="btn-primary" onclick="linkItemToJob('services')">Dodaj Usługę</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4>Lista zużytych części i wykonanych usług</h4>
+                        <div id="job-items-list" style="background: white; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; min-height: 50px;">
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                            <p><strong>Łączny czas:</strong> <span id="detail-total-time">0m</span></p>
+                            <div id="job-total-summary" style="font-weight: bold; font-size: 1.1rem;">Razem: 0.00 PLN</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 40px; border-top: 2px solid #eee; padding-top: 20px; display: flex; justify-content: center;">
+                        <button id="btn-delete-reservation" class="btn-primary btn-danger" style="width: auto; padding: 10px 30px;" onclick="deleteCurrentReservation()">
+                            Usuń Rezerwację
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        
+    </div>
+
+<script>
+    const API_URL = 'http://localhost:1188/api';
+
+    // UI Navigation Logic
+    function toggleView() {
+        document.getElementById('login-view').classList.toggle('hidden');
+        document.getElementById('register-view').classList.toggle('hidden');
+        document.getElementById('status').innerText = '';
+    }
+
+    function switchTab(tabName) {
+        const card = document.querySelector('.card');
+        const userRole = localStorage.getItem('rola');
+    
+        // Block mechanics from entering the insert tab
+        if (tabName === 'insert' && userRole === 'mechanik') {
+            showStatus("Brak uprawnień do dodawania elementów", true);
+            return;
+        }
+        
+        // Hide all tabs
+        document.getElementById('tab-insert').classList.add('hidden');
+        document.getElementById('tab-list').classList.add('hidden');
+        document.getElementById('tab-weekly').classList.add('hidden');
+        document.getElementById('tab-client').classList.add('hidden');
+        document.getElementById('tab-res').classList.add('hidden');
+        document.getElementById('tab-job-details').classList.add('hidden');
+        document.getElementById('tab-' + tabName).classList.remove('hidden');
+        
+        const activeTab = document.getElementById('tab-' + tabName);
+        if (activeTab) {
+            activeTab.classList.remove('hidden');
+        }
+        
+        if (tabName === 'list' || tabName === 'weekly') {
+            card.classList.add('card-wide');
+            if (tabName === 'weekly') {
+                renderWeeklyView();
+            }
+        } else {
+            card.classList.remove('card-wide');
+        }
+
+        document.getElementById('status').innerText = '';
+    }
+
+    function toggleForm() {
+        const type = document.getElementById('item-type').value;
+        const wrapper = document.getElementById('duration-wrapper');
+        if (type === 'service') wrapper.classList.remove('hidden');
+        else wrapper.classList.add('hidden');
+    }
+
+    function showStatus(msg, isError = false) {
+        const el = document.getElementById('status');
+        el.innerText = msg;
+        el.style.color = isError ? 'red' : 'green';
+
+        if (el.timeoutId) {
+            clearTimeout(el.timeoutId);
+        }
+
+        // hide the message after 3 seconds
+        el.timeoutId = setTimeout(() => {
+            el.innerText = '';
+        }, 3000);
+    }
+
+    // Auth Logic
+    async function handleLogin() {
+        const login = document.getElementById('login-email').value;
+        const haslo = document.getElementById('login-pass').value;
+
+        try {
+            const res = await fetch(`${API_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ login, haslo })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                localStorage.setItem('rola', data.rola);
+                localStorage.setItem('uzytkownik', login);
+                showPanel(login, data.rola);
+            } else {
+                showStatus(data.message, true);
+            }
+        } catch (err) {
+            showStatus("Błąd połączenia z serwerem", true);
+        }
+    }
+
+    async function handleRegister() {
+        const login = document.getElementById('reg-login').value;
+        const haslo = document.getElementById('reg-pass').value;
+        const rola = document.getElementById('reg-role').value;
+
+        try {
+            const res = await fetch(`${API_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ login, haslo, rola })
+            });
+            if (res.ok) {
+                showStatus("Konto utworzone! Zaloguj się.");
+                toggleView();
+            } else {
+                const data = await res.json();
+                showStatus(data.message, true);
+            }
+        } catch (err) {
+            showStatus("Błąd połączenia", true);
+        }
+    }
+
+    function showPanel(user, rola) {
+        document.getElementById('login-view').classList.add('hidden');
+        document.getElementById('register-view').classList.add('hidden');
+        
+        document.getElementById('main-nav').classList.remove('hidden');
+        document.getElementById('user-panel').classList.remove('hidden');
+        
+        document.getElementById('display-user').innerText = user;
+        document.getElementById('display-role').innerText = rola;
+
+        const addBtn = document.getElementById('nav-add-btn');
+        const addClientBtn = document.getElementById('nav-client-btn');
+        const resBtn = document.getElementById('nav-res-btn');
+        const clientListBtn = document.getElementById('btn-list-clients');
+
+        if (rola === 'biuro') {
+            // Office staff permissions: Show all buttons
+            if (addBtn) addBtn.classList.remove('hidden');
+            if (addClientBtn) addClientBtn.classList.remove('hidden');
+            if (clientListBtn) clientListBtn.classList.remove('hidden');
+            if (resBtn) resBtn.classList.remove('hidden');
+            
+            document.getElementById('actions-office').style.display = 'block';
+            switchTab('insert');
+        } else {
+            // Mechanic permissions: Hide restricted buttons
+            if (addBtn) addBtn.classList.add('hidden');
+            if (addClientBtn) addClientBtn.classList.add('hidden');
+            if (clientListBtn) clientListBtn.classList.add('hidden');
+            if (resBtn) resBtn.classList.add('hidden');
+
+            document.getElementById('actions-office').style.display = 'none';
+            switchTab('list');
+        }
+    }
+
+    function logout() {
+        localStorage.clear();
+        location.reload();
+    }
+
+    // Data Management Logic
+    async function handleSubmit() {
+        const type = document.getElementById('item-type').value;
+        const name = document.getElementById('input-name').value;
+        const price = document.getElementById('input-price').value;
+
+        const payload = { name, price };
+        let endpoint = '/parts';
+
+        if (type === 'service') {
+            payload.duration = document.getElementById('input-duration').value;
+            endpoint = '/services';
+        }
+
+        try {
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                showStatus("Dodano pomyślnie!");
+                // Clear inputs
+                document.getElementById('input-name').value = '';
+                document.getElementById('input-price').value = '';
+                document.getElementById('input-duration').value = '';
+            } else {
+                const data = await response.json();
+                showStatus("Błąd: " + (data.error || "Nieznany"), true);
+            }
+        } catch (error) {
+            showStatus("Błąd połączenia", true);
+        }
+    }
+
+    async function handleDelete() {
+        const name = document.getElementById('delete-name').value;
+        const type = document.getElementById('item-type').value;
+        const endpoint = type === 'part' ? 'parts' : 'services';
+
+        if (!name) {
+            showStatus("Wpisz nazwę do usunięcia", true);
+            return;
+        }
+
+        if (!confirm(`Czy na pewno chcesz usunąć: ${name}?`)) return;
+
+        try {
+            const res = await fetch(`${API_URL}/${endpoint}/${encodeURIComponent(name)}`, {
+                method: 'DELETE'
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                showStatus(data.message);
+                document.getElementById('delete-name').value = '';
+            } else {
+                showStatus(data.error, true);
+            }
+        } catch (err) {
+            showStatus("Błąd połączenia", true);
+        }
+    }
+
+    let currentPage = 1;
+    let currentType = 'parts';
+    const itemsPerPage = 6;
+
+    async function fetchData(type, page = 1) {
+        currentType = type;
+        currentPage = page;
+        const container = document.getElementById('data-container');
+        const userRole = localStorage.getItem('rola');
+
+        if (type === 'clients' && userRole !== 'biuro') {
+            container.innerHTML = "<p style='color:red;'>Brak uprawnień do przeglądania listy klientów.</p>";
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/${type}?page=${page}&limit=${itemsPerPage}`);
+            const result = await response.json();
+
+            let htmlContent = '';
+            
+            if (!result.data || result.data.length === 0) {
+                htmlContent = "<p style='grid-column: 1/-1;'>Brak rekordów.</p>";
+            } else {
+                result.data.forEach(item => {
+                    htmlContent += `<div class="item-card">`;
+                    
+                    if (type === 'clients') {
+                        htmlContent += `
+                            <div><strong>Imię:</strong> ${item.imie}</div>
+                            <div><strong>Nazwisko:</strong> ${item.nazwisko}</div>
+                            <div><strong>ID:</strong> ${item.id_klienta}</div>`;
+                    } else {
+                        htmlContent += `
+                            <div><strong>Nazwa:</strong> ${item.nazwa}</div>
+                            <div><strong>Cena:</strong> ${item.cena} PLN</div>
+                            ${type === 'services' ? `<div><strong>Czas:</strong> ${item.czas.hours || 0}h ${item.czas.minutes || 0}m</div>` : ''}`;
+                    }
+
+                    if (userRole === 'biuro') {
+                        const deleteId = type === 'clients' ? item.id_klienta : item.nazwa;
+                        htmlContent += `
+                            <button class="btn-danger" style="margin-top:8px; width: 60px; padding: 3px; font-size: 0.7rem;" 
+                                    onclick="deleteInline('${type}', '${deleteId}')">Usuń</button>`;
+                    }
+                    htmlContent += `</div>`;
+                });
+
+                // pagination
+                const totalPages = Math.ceil(result.total / itemsPerPage);
+                htmlContent += `
+                    <div class="pagination-controls">
+                        <button class="btn-primary" style="width:auto;" ${currentPage === 1 ? 'disabled' : ''} 
+                                onclick="fetchData('${type}', ${currentPage - 1})">⬅️</button>
+                        <span>Strona ${currentPage} z ${totalPages}</span>
+                        <button class="btn-primary" style="width:auto;" ${currentPage === totalPages ? 'disabled' : ''} 
+                                onclick="fetchData('${type}', ${currentPage + 1})">➡️</button>
+                    </div>`;
+            }
+
+            // prevent flickering
+            container.innerHTML = htmlContent;
+
+        } catch (err) {
+            console.error("Fetch Error:", err);
+            container.innerHTML = "<p style='color:red;'>Błąd pobierania danych.</p>";
+        }
+    }
+
+    async function deleteInline(type, name) {
+        if (!confirm(`Usunąć ${name}?`)) return;
+        
+        try {
+            const res = await fetch(`${API_URL}/${type}/${encodeURIComponent(name)}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                fetchData(type);
+                showStatus("Usunięto pomyślnie");
+            } else {
+                showStatus("Błąd usuwania", true);
+            }
+        } catch (err) {
+            showStatus("Błąd połączenia", true);
+        }
+    }
+
+    let currentViewDate = new Date();
+
+    function changeWeek(direction) {
+        currentViewDate.setDate(currentViewDate.getDate() + (direction * 7));
+        renderWeeklyView();
+    }
+
+    function getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+
+    async function renderWeeklyView() {
+        const container = document.getElementById('weekly-grid-container');
+        const title = document.getElementById('week-display-title');
+        const weekNum = getWeekNumber(currentViewDate);
+        title.innerText = `Rok ${currentViewDate.getFullYear()}, Tydzień ${weekNum}`;
+
+        const startOfWeek = new Date(currentViewDate);
+        const day = startOfWeek.getDay();
+        const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+        startOfWeek.setDate(diff);
+
+        container.innerHTML = '';
+        const dayNames = ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Ndz'];
+
+        for (let i = 0; i < 7; i++) {
+            const currentDate = new Date(startOfWeek);
+            currentDate.setDate(startOfWeek.getDate() + i);
+            const dateStr = currentDate.toISOString().split('T')[0];
+
+            const dayCol = document.createElement('div');
+            dayCol.className = 'day-column';
+            dayCol.innerHTML = `
+                <div class="day-header">
+                    ${dayNames[i]}<br><small>${currentDate.toLocaleDateString('pl-PL')}</small>
+                </div>
+                <div id="tasks-${dateStr}"></div>
+            `;
+            container.appendChild(dayCol);
+            
+            fetchDayTasks(dateStr);
+        }
+    }
+
+    // helper to extract HH:MM from ISO string
+    function formatTime(isoString) {
+        if (!isoString) return "--:--";
+        const d = new Date(isoString);
+        return d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    async function fetchDayTasks(dateStr) {
+        const dayContainer = document.getElementById(`tasks-${dateStr}`);
+        if (!dayContainer) return;
+
+        try {
+            const res = await fetch(`${API_URL}/reservations?date=${dateStr}`);
+            const tasks = await res.json();
+            dayContainer.innerHTML = '';
+
+            tasks.forEach(task => {
+                const start = formatTime(task.data_rezerwacji);
+                const end = formatTime(task.data_konca);
+                
+                const item = document.createElement('div');
+                item.className = 'weekly-item';
+                item.onclick = () => openJobDetails(task);
+
+                const bgColor = getStatusColor(task.status);
+                const borderColor = getStatusBorderColor(task.status);
+                
+                item.style.backgroundColor = bgColor;
+                item.style.borderLeft = `5px solid ${borderColor}`;
+                item.style.borderTop = `1px solid ${borderColor}`;
+                item.style.borderRight = `1px solid ${borderColor}`;
+                item.style.borderBottom = `1px solid ${borderColor}`;
+
+                item.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 4px; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                        <span>🕒 ${start} - ${end}</span>
+                        <span style="font-weight: bold;">#${task.id_rez}</span>
+                    </div>
+                    <div style="font-weight: bold;">${task.imie[0]}. ${task.nazwisko}</div>
+                    <div style="font-size: 0.65rem; opacity: 0.8;">${task.status.toUpperCase()}</div>
+                `;
+                dayContainer.appendChild(item);
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function handleAddTicket() {
+        const imie = document.getElementById('cust-imie').value;
+        const nazwisko = document.getElementById('cust-nazwisko').value;
+        const startTime = document.getElementById('rez-start-time').value;
+        const opis = document.getElementById('rez-opis').value;
+
+        if (!imie || !nazwisko || !startTime) {
+            return showStatus("Wypełnij imię, nazwisko i czas!", true);
+        }
+
+        try {
+            const res = await fetch(`${API_URL}/tickets`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ imie, nazwisko, startTime, opis })
+            });
+
+            if (res.ok) {
+                showStatus("Dodano zlecenie do kalendarza!");
+                // Reset fields
+                document.getElementById('cust-imie').value = '';
+                document.getElementById('cust-nazwisko').value = '';
+                document.getElementById('rez-opis').value = '';
+            } else {
+                showStatus("Błąd podczas dodawania zlecenia", true);
+            }
+        } catch (err) {
+            showStatus("Błąd połączenia", true);
+        }
+    }
+
+    async function addClient() {
+        const imie = document.getElementById('client-imie').value;
+        const nazwisko = document.getElementById('client-nazwisko').value;
+
+        if (!imie || !nazwisko) {
+            return showStatus("Podaj imię i nazwisko klienta!", true);
+        }
+
+        try {
+            const res = await fetch(`${API_URL}/clients`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ imie, nazwisko })
+            });
+
+            if (res.ok) {
+                showStatus("Klient dodany pomyślnie!");
+                document.getElementById('client-imie').value = '';
+                document.getElementById('client-nazwisko').value = '';
+            } else {
+                const data = await res.json();
+                showStatus(data.error || "Błąd dodawania klienta", true);
+            }
+        } catch (err) {
+            showStatus("Błąd połączenia", true);
+        }
+    }
+
+    async function handleSaveAppointment() {
+        const id_klienta = document.getElementById('rez-client-id').value;
+        const data_rezerwacji = document.getElementById('rez-start-time').value;
+        const opis = document.getElementById('rez-opis').value;
+
+        if (!id_klienta || !data_rezerwacji) {
+            return showStatus("Podaj ID klienta i datę!", true);
+        }
+
+        try {
+            const res = await fetch(`${API_URL}/reservations`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_klienta, data_rezerwacji, opis })
+            });
+
+            if (res.ok) {
+                showStatus("Wizyta została zapisana w kalendarzu.");
+                document.getElementById('rez-client-id').value = '';
+                document.getElementById('rez-start-time').value = '';
+                document.getElementById('rez-opis').value = '';
+                renderWeeklyView();
+            } else {
+                const errData = await res.json();
+                showStatus("Błąd: " + (errData.error || "Nie udało się zapisać"), true);
+            }
+        } catch (err) {
+            showStatus("Błąd połączenia z serwerem", true);
+        }
+    }
+
+    let activeReservationId = null;
+
+    function openJobDetails(task) {
+        activeReservationId = task.id_rez;
+        document.getElementById('detail-res-id').innerText = task.id_rez;
+        document.getElementById('detail-client').innerText = `${task.imie} ${task.nazwisko}`;
+        document.getElementById('detail-opis').innerText = task.opis || "Brak opisu";
+        const userRole = localStorage.getItem('rola');
+        const deleteBtn = document.getElementById('btn-delete-reservation');
+        
+        if (userRole === 'biuro') {
+            deleteBtn.classList.remove('hidden');
+        } else {
+            deleteBtn.classList.add('hidden');
+        }
+        const statusSelector = document.getElementById('status-selector');
+        statusSelector.value = task.status;
+        updateStatusBadge(task.status);
+        const start = formatTime(task.data_rezerwacji);
+        const end = task.data_konca ? formatTime(task.data_konca) : "--:--";
+        document.getElementById('detail-time-range').innerText = `${start} — ${end}`;
+        switchTab('job-details');
+        loadJobItems();
+    }
+
+    async function linkItemToJob(type) {
+        const inputId = `add-${type === 'parts' ? 'part' : 'service'}-name`;
+        const itemName = document.getElementById(`add-${type === 'parts' ? 'part' : 'service'}-name`).value;
+        
+        if (!itemName) return showStatus("Wpisz nazwę!", true);
+
+        try {
+            const res = await fetch(`${API_URL}/reservations/${activeReservationId}/add-item`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type, itemName })
+            });
+
+            if (res.ok) {
+                showStatus("Dodano do zlecenia!");
+                document.getElementById(`add-${type === 'parts' ? 'part' : 'service'}-name`).value = '';
+                loadJobItems();
+            } else {
+                showStatus("Nie znaleziono elementu w bazie", true);
+            }
+        } catch (err) {
+            showStatus("Błąd połączenia", true);
+        }
+    }
+
+    async function loadJobItems() {
+        const listContainer = document.getElementById('job-items-list');
+        const summaryContainer = document.getElementById('job-total-summary');
+        
+        try {
+            const res = await fetch(`${API_URL}/reservations/${activeReservationId}/items`);
+            const items = await res.json();
+            const resHeader = await fetch(`${API_URL}/reservations/${activeReservationId}`);
+            const job = await resHeader.json();
+        
+            document.getElementById('detail-total-time').innerText = formatInterval(job.czas_suma);
+            if (items.length === 0) {
+                listContainer.innerHTML = '<p style="padding: 15px; color: #888;">Brak przypisanych elementów.</p>';
+                summaryContainer.innerText = "Razem: 0.00 PLN";
+                return;
+            }
+
+            let total = 0;
+            let html = '<table style="width: 100%; border-collapse: collapse;">';
+            html += '<tr style="background: #f1f1f1; text-align: left;"><th style="padding: 10px;">Typ</th><th style="padding: 10px;">Nazwa</th><th style="padding: 10px;">Cena</th></tr>';
+            
+            items.forEach(item => {
+                total += parseFloat(item.cena);
+                html += `
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px;">${item.type === 'part' ? 'Część' : 'Usługa'}</td>
+                        <td style="padding: 10px;">${item.nazwa}</td>
+                        <td style="padding: 10px;">${item.cena} PLN</td>
+                    </tr>`;
+            });
+            
+            html += '</table>';
+            listContainer.innerHTML = html;
+            summaryContainer.innerText = `Razem: ${total.toFixed(2)} PLN`;
+
+        } catch (err) {
+            listContainer.innerHTML = '<p style="padding: 15px; color: red;">Błąd ładowania listy.</p>';
+        }
+    }
+
+    async function updateJobStatus() {
+        const newStatus = document.getElementById('status-selector').value;
+
+        try {
+            const res = await fetch(`${API_URL}/reservations/${activeReservationId}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (res.ok) {
+                showStatus("Status zaktualizowany!");
+                updateStatusBadge(newStatus);
+                renderWeeklyView(); 
+            } else {
+                showStatus("Błąd aktualizacji statusu", true);
+            }
+        } catch (err) {
+            showStatus("Błąd połączenia", true);
+        }
+    }
+
+    function updateStatusBadge(status) {
+        const badge = document.getElementById('current-status-badge');
+        badge.innerText = status.toUpperCase();
+        
+        const colors = {
+            'oczekuje': { bg: '#ffeeba', text: '#856404' },
+            'w trakcie': { bg: '#b8daff', text: '#004085' },
+            'zakonczone': { bg: '#c3e6cb', text: '#155724' },
+        };
+        
+        const style = colors[status] || colors['oczekuje'];
+        badge.style.backgroundColor = style.bg;
+        badge.style.color = style.text;
+    }
+
+    function formatInterval(interval) {
+        if (!interval) return "0m";
+        // handle object format: { hours: 1, minutes: 30 }
+        if (typeof interval === 'object') {
+            const h = interval.hours || 0;
+            const m = interval.minutes || 0;
+            return h > 0 ? `${h}h ${m}m` : `${m}m`;
+        }
+        // handle string format: "01:30:00"
+        if (typeof interval === 'string') {
+            const parts = interval.split(':');
+            const h = parseInt(parts[0]);
+            const m = parseInt(parts[1]);
+            return h > 0 ? `${h}h ${m}m` : `${m}m`;
+        }
+        return interval;
+    }
+
+    function getStatusColor(status) {
+        const statusColors = {
+            'oczekuje': '#fff3cd',
+            'w trakcie': '#cfe2ff',
+            'zakonczone': '#d1e7dd'
+        };
+        return statusColors[status] || '#f8f9fa';
+    }
+
+    function getStatusBorderColor(status) {
+        const borderColors = {
+            'oczekuje': '#ffeeba',
+            'w trakcie': '#b8daff',
+            'zakonczone': '#badbcc'
+        };
+        return borderColors[status] || '#ddd';
+    }
+
+
+    async function deleteCurrentReservation() {
+        if (!confirm(`Czy na pewno chcesz całkowicie USUNĄĆ zlecenie #${activeReservationId}? Tej operacji nie można cofnąć.`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_URL}/reservations/${activeReservationId}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                showStatus("Zlecenie zostało usunięte.");
+                renderWeeklyView();
+                switchTab('weekly');
+            } else {
+                const data = await res.json();
+                showStatus("Błąd: " + (data.error || "Nie udało się usunąć zlecenia"), true);
+            }
+        } catch (err) {
+            showStatus("Błąd połączenia z serwerem", true);
+            console.error("Delete error:", err);
+        }
+    }
+
+</script>
+</body>
+</html>
