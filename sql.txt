@@ -1,0 +1,44 @@
+create type rola as enum('mechanik', 'biuro');
+create type status as enum('oczekuje', 'w trakcie', 'zakonczone');
+
+create table dane_logowania(
+id_log serial primary key,
+login text unique not null,
+haslo text not null,
+rola rola not null);
+
+create table dane_klienta(
+id_klienta serial primary key,
+imie text not null,
+nazwisko text not null);
+
+create table dane_klienta(
+id_klienta serial primary key,
+imie text not null,
+nazwisko text not null);
+
+create table czesci(
+id_czesci serial primary key,
+nazwa text not null,
+cena numeric(7,2) not null);
+
+create table usluga(
+id_uslugi serial primary key,
+nazwa text not null,
+czas interval not null,
+cena numeric(7,2) not null);
+
+create table rezerwacje(
+id_rez serial primary key,
+id_klienta integer not null,
+czas_suma interval,
+cena_suma numeric(9,2),
+status status default 'oczekuje',
+data_rezerwacji timestamp default CURRENT_TIMESTAMP,
+opis text);
+
+create table elementy_rez(
+id_el serial primary key,
+id_rez integer not null,
+id_czesci integer,
+id_uslugi integer);
